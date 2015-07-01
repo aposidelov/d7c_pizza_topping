@@ -179,7 +179,7 @@ function dc_topping_preprocess_node(&$variables) {
   if ($view_name == 'pizza_list' && $variables['sticky']) {
     $own_pizza_default_amount = variable_get('dc_own_pizza_default_amount', 699);
     $variables['content']['product_display_price']['#markup'] = commerce_currency_format($own_pizza_default_amount, 'USD');
-    $variables['content']['node_link'][0]['#markup'] = l(t('Get Started'), 'node/'.$variables['nid']);
+    $variables['content']['node_link'][0]['#markup'] = l(t('Create your pizza'), 'node/'.$variables['nid']);
   }
 }
 
