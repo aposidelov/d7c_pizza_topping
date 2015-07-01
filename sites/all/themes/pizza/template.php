@@ -52,6 +52,6 @@ function pizza_preprocess_html(&$variables) {
 	$theme_settings = variable_get('theme_pizza_settings', array());
 	$variables['logo'] = file_create_url($theme_settings['logo_path']);
 	$variables['front_page'] = '/';
-	$variables['cart_total'] = '---:'.dc_get_cart_total();
+	$variables['cart_total'] = dc_get_cart_total();
 }
 
