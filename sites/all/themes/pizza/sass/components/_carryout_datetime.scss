@@ -1,0 +1,97 @@
+.field-name-field-carryout-date {
+
+	.container-inline-date .date-padding {
+		padding: 0px;
+	}
+
+	select {
+		width: 55px;
+		height: 30px;
+  		
+		font-weight: bold;
+  		color: #000;
+	}
+
+	.date-spacer {
+		display: none;
+	}
+
+	.form-item-customer-profile-carryout-time-field-carryout-date-und-0-value-month,
+	.form-item-customer-profile-carryout-time-field-carryout-date-und-0-value-hour {
+		&:before {
+			width: 120px;			
+			float: left;
+
+			margin-right: 20px;
+
+			font-size: 17px;
+			font-family: "UnitedSansBold";			
+			letter-spacing: 0.2px;
+			color: #ffffff;
+			text-transform: uppercase;
+			line-height: 30px;
+		}
+	}
+
+	.form-item-customer-profile-carryout-time-field-carryout-date-und-0-value-month {
+
+		label {
+			display: none;
+		}
+
+		.date-month {
+			float: left;
+		}	
+
+		&:before {
+			content: "Carryout date";
+		}	
+	}
+
+	.form-item-customer-profile-carryout-time-field-carryout-date-und-0-value-day {
+		label {
+
+		}
+
+		.date-day {
+			
+		}
+	}
+
+	.form-item-customer-profile-carryout-time-field-carryout-date-und-0-value-year {		
+
+		label {
+
+		}
+
+		.date-year {
+			
+		}
+	}
+
+	.form-item-customer-profile-carryout-time-field-carryout-date-und-0-value-hour {
+		clear: both;
+
+		label {
+
+		}
+
+		.date-hour {
+			float: left;
+		}	
+
+		&:before {
+			content: "Approx. time";
+		}		
+	}
+
+	.form-item-customer-profile-carryout-time-field-carryout-date-und-0-value-minute {
+		label {
+
+		}
+
+		.date-minute {
+			
+		}
+	}
+}

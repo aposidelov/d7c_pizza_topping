@@ -1,0 +1,36 @@
+input[type="checkbox"] {
+    display:none;
+}
+
+input[type="checkbox"] ~ label {
+    display:inline;
+    font-size: 18px;
+}
+
+input[type="checkbox"] ~ label:before {
+    content: '';
+    width: 34px;
+    height: 34px;
+    background: sprite($checkbox_icons, checkbox-off);
+    display: inline-block;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-right: 10px;
+
+    transition: background 0s linear 0.5s;
+    -moz-transition: background 0s linear 0.5s;
+    -webkit-transition: background 0s linear 0.5s;
+}
+
+input[type="checkbox"]:checked ~ label:before {
+    content: '';
+    background: sprite($checkbox_icons, checkbox-on);
+    transition: background 0s linear 0.5s;
+    -moz-transition: background 0s linear 0.5s;
+    -webkit-transition: background 0s linear 0.5s;
+    
+   
+    /*transition: opacity .25s, background linear 0.25s, opacity linear .5s;
+    -moz-transition: opacity .25s, background linear 0.25s, opacity linear .5s;
+    -webkit-transition: opacity .25s, background linear 0.25s, opacity linear .5s;*/
+}

@@ -1,0 +1,43 @@
+/* line 16, ../../../sass/layouts/two_columns/layout.scss */
+.l-page {
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto; }
+  /* line 12, ../../../../../../../../../../../Ruby22/lib/ruby/gems/2.2.0/gems/susy-2.2.2/sass/susy/output/support/_clearfix.scss */
+  .l-page:after {
+    content: " ";
+    display: block;
+    clear: both; }
+  /* line 21, ../../../sass/layouts/two_columns/layout.scss */
+  .l-page .l-header {
+    *zoom: 1;
+    margin-top: 10px;
+    margin-bottom: 10px; }
+    /* line 38, ../../../../../../../../../../../Ruby22/lib/ruby/gems/2.2.0/gems/compass-core-1.0.3/stylesheets/compass/utilities/general/_clearfix.scss */
+    .l-page .l-header:after {
+      content: "";
+      display: table;
+      clear: both; }
+    /* line 27, ../../../sass/layouts/two_columns/layout.scss */
+    .l-page .l-header .l-header-left {
+      width: 23.72881%;
+      float: left;
+      margin-right: 1.69492%;
+      padding-left: 20px; }
+    /* line 34, ../../../sass/layouts/two_columns/layout.scss */
+    .l-page .l-header .l-header-right {
+      width: 74.57627%;
+      float: right;
+      margin-right: 0; }
+  /* line 44, ../../../sass/layouts/two_columns/layout.scss */
+  .l-page .l-center .l-two-columns.l-content {
+    width: 74.57627%;
+    float: right;
+    margin-right: 0; }
+  /* line 49, ../../../sass/layouts/two_columns/layout.scss */
+  .l-page .l-center .l-two-columns.l-sidebar {
+    width: 23.72881%;
+    float: left;
+    margin-right: 1.69492%; }
+
+/*# sourceMappingURL=layout.css.map */

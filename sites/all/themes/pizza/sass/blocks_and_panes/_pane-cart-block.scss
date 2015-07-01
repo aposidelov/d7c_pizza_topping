@@ -1,0 +1,216 @@
+.view-commerce-cart-block {			
+
+	.view-header {
+		@include dark-bg();
+		margin-bottom: $pane-parts-space;
+		padding: 12px 0 5px;
+		
+		p {
+			display: none;
+		}
+
+		h3.info-title {
+			margin: 0;
+			
+			a {
+				background: image-url('pizza-box-cart.png') 26px 50% no-repeat;			
+
+				padding-left: 90px;
+				padding-top: 5px;
+
+				font-family: "UnitedSansBold";
+				font-size: 27px;
+				text-transform: uppercase;
+				color: $orange-dark;
+				text-decoration: none;
+			}
+		}
+	}
+
+	.views-row {
+		clear: both;			
+		display: table;
+		width: 100%;
+
+		@include dark-bg();
+
+		margin-bottom: $pane-parts-space;
+		padding: 10px 5px 12px 5px;
+
+		color: $orange-dark;
+
+		&.active {							  
+
+			border: 3px solid $orange-dark;
+		}
+	}
+
+	.views-field-field-image, .views-field-field-pizza-size, .views-field-title, .views-field-quantity, .views-field-commerce-total {
+		text-align: center;
+	}
+
+	.views-field-field-pizza-size {
+		font-size: 12px;
+		color: #fff;
+	}
+
+	.views-field-quantity {
+		color: #fff;
+	}
+
+	.views-field-title {
+		h3 {
+			font-family: "UnitedSansBold";
+			text-transform: uppercase;
+			
+			margin-top: 5px;
+			a {
+				color: $orange-dark;
+			}
+		}
+	}
+
+	.pane-dc-cart-summary-pane { 
+		h3.pizza-title { 
+			color: $orange-dark;
+			font-family: "Roboto";
+		}
+
+		.total { 
+			
+			font-family: "Roboto";
+
+			.total-label { 
+				display: block;
+				text-align: center;
+			}
+
+			.total-price { 
+				display: block;
+				text-align: center;
+
+				font-size: 35px;
+			}
+
+			.e-pizza-form-submit { 
+
+			}
+		}
+	}
+
+	.views-field-quantity {		
+		font-family: "Roboto";
+	}
+
+	.views-field-commerce-total {
+	  margin-bottom: 10px;
+
+	  @include price-medium;
+	}
+
+	.views-field-field-toppings {
+		ul {
+			margin: 0;
+			padding: 0;
+
+			list-style: none;
+
+			li {
+				position: relative;
+
+				list-style-image: none;
+
+				@include gallery(3 of 15);
+
+				.qty-overriden {
+					@include cart-topping-qty;						  												 
+				}
+			}
+		}
+	}
+
+	// view footer Order Total
+	.view-footer {
+		padding: 0px;
+		@include dark-bg();
+
+		.commerce-price-formatted-components {
+			width: 100%;
+			border-spacing: 0px;
+
+			th, td {
+				padding: 10px 0 0px 10px;
+			}
+
+			.component-title {
+				@include price-medium(16px);
+
+				color: #ffffff;
+				vertical-align: bottom;
+			}		
+
+			.component-type-base-price,
+			.component-type-taxtax,
+			.component-type-commerce-price-formatted-amount {
+				@include price-medium(16px);			
+			}
+		}
+
+		.line-item-quantity, .line-item-total {				
+			text-align: center;
+			font-family: "Roboto";
+		}
+
+		.line-item-summary .line-item-quantity {
+			float: none;
+		}
+
+		.line-item-summary {
+			margin: 0;
+  			padding: 12px 0 0 0;
+		}
+
+		.line-item-quantity {
+			color: #ffffff;
+		}
+
+		.line-item-total {								
+			font-size: 17px;
+			font-family: "Roboto";
+
+			.line-item-total-label {
+				display: block;
+				margin-top: 15px;
+				
+				font-weight: bold;				  				  
+				color: $orange-dark;
+			}
+			.line-item-total-raw {					
+				color: $yellow-cream;
+
+				font-size: 35px;
+			}
+		}
+
+		ul.links {
+			margin: 20px auto 0;
+			width: 84%;
+
+			li {
+				list-style-image: none;
+
+				&.line-item-summary-view-cart a {
+					@include site-button();
+				}
+
+				&.line-item-summary-checkout {
+					margin-right: 0px;
+			
+					a {
+						@include site-button;
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,43 @@
+table {
+	border-collapse: separate;
+	border-spacing: 0px;
+
+	width: 100%;
+
+	font-size: 14px;
+
+	tr {
+
+	}
+
+	tr.even {
+		background-color: transparent;
+	}
+
+	tr.odd {
+		background-color: transparent;
+	}
+
+	th, td {
+		padding: 10px;
+	}
+}
+
+.page-pizza, .node-type-product-display, 
+.views-form-commerce-cart-form-default {
+	table {
+
+		border-collapse: separate; 
+		border-spacing: 0 5px;
+		
+		font-family: "UnitedSansBold";
+		
+		th, td {
+			padding: 10px 0 10px 10px;
+		}
+
+		tr.topping-item {
+			@include dark-bg;
+		}
+	}
+}

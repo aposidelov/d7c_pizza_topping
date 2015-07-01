@@ -1,0 +1,5 @@
+@mixin price-medium($font-size:22px) {
+	font-family: "Roboto";
+	font-size: $font-size;
+	color: $yellow-cream;
+}

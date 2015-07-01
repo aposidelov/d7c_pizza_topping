@@ -1,0 +1,53 @@
+// Import external libraries.
+@import "compass";
+@import "susy";
+@import "breakpoint";
+@import "toolkit";
+@import "../../variables/_colors.scss";
+@import "../../variables/_grid.scss";
+
+$susy: (
+  columns: 12,
+  gutters: 1/4,
+  container: $grid-width//,
+  //debug: (image:show)
+);
+
+.l-page {	
+
+		@include container;	
+		//@include susy-grid-background;
+
+		.l-header { 
+			@include pie-clearfix;
+
+			margin-top: 10px;
+			margin-bottom: 10px;
+			
+			.l-header-left {
+				
+				@include span(3 of 12);		
+
+				padding-left: 20px;	
+			}
+			
+			.l-header-right {
+
+				@include span(9 of 12 last);								
+			}
+		}
+
+		.l-center { 
+
+		//@include susy-grid-background;		
+
+		.l-two-columns.l-content { 
+			@include span(9 last);
+						
+		}
+
+		.l-two-columns.l-sidebar { 		
+			@include span(3);
+		}		
+	}	
+}

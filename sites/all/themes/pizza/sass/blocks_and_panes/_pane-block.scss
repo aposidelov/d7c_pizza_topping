@@ -1,0 +1,46 @@
+.pane-block {	
+
+	padding-bottom: 20px;
+
+	.pane-body {
+		//border-bottom: 1px dotted $green-text-color;		
+		padding: 20px 0;
+
+		//background: rgba(0,0,0,0.4);
+	}
+
+	.menu .collapsed, .menu .leaf {
+		list-style-image: image-url('grey-arrow-pane.gif');
+	}
+
+	ul {
+
+		margin: 0;		
+	
+		li {
+
+			list-style-image: image-url('grey-arrow-pane.gif');
+
+			a {
+				background: transparent;
+
+				text-decoration: none;
+				text-transform: uppercase;
+				
+				color: $green-text-color;
+				font-size: 11px;
+				font-weight: bold;
+				
+				&:hover {
+					text-decoration: underline;
+
+					color: $orange-text-color;
+				}
+
+				&.active {
+					color: $orange-text-color;
+				}
+			}
+		}
+	}	
+}

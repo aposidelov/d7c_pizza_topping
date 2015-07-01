@@ -1,0 +1,73 @@
+form {			
+
+	fieldset {
+		margin-bottom: 15px;
+	}
+
+	.fieldset-legend {
+		font-size: 15px;
+	}
+
+	.form-item, .form-actions {
+		margin-bottom: 0;
+	}		
+
+	.ingredient-price {
+		@include price-medium;		
+	}
+
+	.form-required {
+		color: $yellow-cream;
+	}
+
+	.form-item {
+		margin-left: 0px;		
+
+		label {				
+			margin-bottom: 3px;
+
+			font-family: "Roboto";
+  			font-size: 20px;			
+
+			color: $white-text-color;
+
+			vertical-align: middle;
+		}
+
+		input, textarea {
+			padding-left: 5px;
+			
+			border-radius: 4px;
+
+			//font-size: 13px;
+			line-height: 18px;
+			color: $dark-text-color;
+		}
+	}
+
+
+	.bootstrap-touchspin {
+		width: 60px;
+		input {
+			border-radius: 3px 0px 0px 3px !important;
+			-moz-border-radius: 3px 0px 0px 3px !important;
+			-webkit-border-radius: 3px 0px 0px 3px !important;
+
+			text-align: center;
+			font-size: 16px;
+		}
+	}
+
+	.form-type-checkbox {
+		label {
+			cursor: pointer;
+		}
+	}
+
+	.form-submit {			
+		@include site-button();
+		
+		margin-top: 15px;
+		margin-left: 0px;
+	}
+}

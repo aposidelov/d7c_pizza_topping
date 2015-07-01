@@ -1,0 +1,151 @@
+.element-invisible {
+	display: none;
+}
+
+
+
+.section-checkout {	
+
+	fieldset {		
+		border: none;
+		border-bottom: 1px solid #646463;
+		
+		legend {
+			margin-bottom: 0px;
+		}
+
+		.fieldset-legend {
+			color: $yellow-cream;
+		}		
+	}
+
+	form.commerce-checkout-form-checkout {
+		margin-top: 20px;		
+		padding: 10px 25px 0 10px;
+
+		background: none repeat scroll 0 0 rgba(0, 0, 0, 0.3);
+
+		.customer_profile_phone,
+		.commerce_payment,
+		.customer_profile_carryout_time {
+			.fieldset-legend {
+				color: #ffffff;
+				font-size: 22px;
+  				font-family: "UnitedSansBold";
+				text-transform: uppercase;
+				&:before {					
+					margin-right: 8px;
+
+					@include circle-bullet();
+				}
+			}
+
+		}
+
+		.customer_profile_phone {
+
+			label {
+				display: inline-block;
+  				width: 135px;
+
+  				font-size: 17px;
+				font-family: "UnitedSansBold";
+				letter-spacing: 0.2px;
+				color: #ffffff;
+				text-transform: uppercase;
+
+				vertical-align: bottom;
+  				line-height: 20px;
+			}
+
+			label.option {
+				width: 100%;
+				font-size: 14px;				
+				display: inline-block;
+			}
+
+			.fieldset-legend:before {
+				content: '1';					
+			}			
+			
+			input {
+				width: 193px;
+  				height: 30px;
+			}
+		}
+
+		.commerce_payment {
+			.fieldset-legend:before {
+				content: '2';			
+			}			
+		}
+
+		.customer_profile_carryout_time {
+			.fieldset-legend:before {
+				content: '3';			
+			}			
+		}
+
+		.form-item-commerce-fieldgroup-pane--group-terms-of-use-field-terms-of-use-und-0 {
+
+			label {
+				font-size: 15px;
+				
+				.term-of-use {
+					width: 70%;
+					display: inline-block;
+					
+					vertical-align: top;
+				}
+
+				a {
+					color: $yellow-cream;
+				}
+
+				.form-required {
+					padding-left: 2px;
+				}
+			}
+		}
+
+		.checkout-buttons {
+			border-bottom: none;
+		}
+
+		.form-radio {
+			display: none;
+		}
+		
+		.button-operator {
+			display: none;
+		}
+
+		.form-item {
+			margin: 14px 8px 10px 0px;
+		}
+
+		.form-type-checkboxes {
+			&>label {
+				display: none;
+			}
+		}
+		
+		.form-submit {
+			margin-top: 7px;	  
+  			margin-bottom: 4px;  		
+		}
+
+		.checkout-cancel {
+			color: $orange-dark;
+		}
+	}	
+}
+
+.checkout-completion-message {
+	margin-top: 20px;
+
+	p {		
+		font-size: 17px;		
+		margin-left: 21px;
+	}
+}

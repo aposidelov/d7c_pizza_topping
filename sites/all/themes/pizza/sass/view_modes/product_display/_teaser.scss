@@ -1,0 +1,65 @@
+.node-teaser {
+	
+	@include dark-bg;
+	padding: 0 13px !important;
+
+	&.node--sticky {
+		border: 3px solid #d4a26f;		
+	}
+
+	.field--name-field-image { 
+	    float: left;
+  		margin-right: 13px;
+
+		img { 
+
+		}
+	}
+
+	.field--name-title {
+	    h2 {
+			margin-top: 19px;
+
+			font-family: "UnitedSansBold";
+			font-size: 21px;
+		  	line-height: 25px;
+		  	text-transform: uppercase;
+		  	color: $orange-dark;
+	    }
+	}
+
+	.field--name-body {
+		min-height: 75px;
+
+	    p {
+			color: $white;
+			font-family: "Roboto";
+			font-size: 13px;
+			letter-spacing: -0.055em;
+			line-height: 16px;
+	    }
+	}
+
+	.field--name-node-link {		
+		float: right;
+
+		margin-top: 33px;
+
+	    a {	    	
+	    	@include site-button;	    	
+	    }
+	}
+
+	.e-price_total_display { 
+		float: right;
+
+		margin-top: 21px;
+		margin-right: 12px;
+
+		color: $white;
+		text-align: center;
+		vertical-align: middle;
+		font-family: "UnitedSansBold";
+		font-size: 35px;
+	}	
+}

@@ -1,0 +1,42 @@
+@mixin site-button() {
+  	background: $button-background-color;
+	
+	/*
+	background-image: -webkit-linear-gradient(top, $button-gradient-top-color, $button-gradient-bottom-color);
+	background-image: -moz-linear-gradient(top, $button-gradient-top-color, $button-gradient-bottom-color);
+	background-image: -ms-linear-gradient(top, $button-gradient-top-color, $button-gradient-bottom-color);
+	background-image: -o-linear-gradient(top, $button-gradient-top-color, $button-gradient-bottom-color);
+	background-image: linear-gradient(to bottom, $button-gradient-top-color, $button-gradient-bottom-color);
+	*/	
+
+	padding: 8px 10px 5px;
+
+	border-radius: 2px;
+  	border: 0;
+
+	text-decoration: none;
+	text-transform: uppercase;
+	text-shadow: 1px 1px 5px #666666;	
+	font-family: "UnitedSansBold";
+	font-size: 15px;
+
+	color: $button-text-color;
+
+	line-height: 13px;
+
+	background-image: -webkit-linear-gradient(top, #ed1c24, #EE3A43);
+	background-image: -moz-linear-gradient(top, #ed1c24, #EE3A43);
+	background-image: -ms-linear-gradient(top, #ed1c24, #EE3A43);
+	background-image: -o-linear-gradient(top, #ed1c24, #EE3A43);
+	background-image: linear-gradient(to bottom, #ed1c24, #EE3A43);
+
+	&:hover {
+		background: $button-hover-gradient-top-color;
+		background-image: -webkit-linear-gradient(top, $button-hover-gradient-top-color, $button-hover-gradient-bottom-color);
+		background-image: -moz-linear-gradient(top, $button-hover-gradient-top-color, $button-hover-gradient-bottom-color);
+		background-image: -ms-linear-gradient(top, $button-hover-gradient-top-color, $button-hover-gradient-bottom-color);
+		background-image: -o-linear-gradient(top, $button-hover-gradient-top-color, $button-hover-gradient-bottom-color);
+		background-image: linear-gradient(to bottom, $button-hover-gradient-top-color, $button-hover-gradient-bottom-color);
+		text-decoration: none;
+	}
+}

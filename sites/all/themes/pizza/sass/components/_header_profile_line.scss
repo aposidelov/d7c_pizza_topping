@@ -1,0 +1,83 @@
+.l-header-right-right { 
+	padding: 5px 9px 3px 0;
+
+	background: rgba(0, 0, 0, 0.7);
+  	border-radius: 5px;
+
+	.e-links { 
+
+		margin: 0;
+		padding: 0px 0 0px 10px;
+
+		li {
+
+			padding-right: 7px;
+  			padding-left: 4px;
+
+  			border-right: 1px dotted #fff;
+						
+			line-height: 12px;
+			text-transform: uppercase;
+		
+			&:first-child {
+				padding-left: 0px;
+			}
+
+			&:last-child {
+				border-right: none;
+			}
+			
+
+			a { 
+				font-size: 12px;
+				color: $white-text-color;
+				text-decoration: none;
+
+				&:hover {
+					opacity: 0.7;
+					-webkit-transition: opacity 0.4s;
+			        -moz-transition: opacity 0.4s;
+			        -o-transition: opacity 0.4s;				        		
+					transition: opacity 0.4s;
+				}
+
+				&.active {
+					opacity: 0.7;
+				}
+
+				&.e-links-profile:before {					
+					content: '';
+					display: inline-block;
+					width: 12px;
+					height: 11px;
+
+					margin-right: 10px;
+
+					background: image-url('arrow_account.png');	
+
+					vertical-align: text-top;
+				}
+
+				&.e-links-cart:before {
+					content: '';
+					display: inline-block;
+					width: 10px;
+					height: 13px;
+
+					margin-right: 10px;					
+
+					background: image-url('picto_cart.png');
+
+					vertical-align: top;
+				}
+			}
+		}
+	}
+
+	.total-cart-sum { 
+		font-size: 12px;		
+		font-weight: bold;
+  		line-height: 17px;
+  		color: $white-text-color;
+	}
+}

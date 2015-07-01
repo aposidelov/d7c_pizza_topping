@@ -1,0 +1,35 @@
+.commerce-price-formatted-components {
+			
+	padding: 5px 15px 5px;
+	
+	td {
+		padding: 0 !important;
+	}
+
+	.component-title {
+		@include price-medium;
+
+		color: #ffffff;
+		vertical-align: bottom;
+	}		
+
+	.component-type-base-price,
+	.component-type-taxtax,
+	.component-type-commerce-price-formatted-amount {
+		@include price-medium;			
+	}
+
+	.component-type-base-price {
+
+	}		
+
+	.component-type-commerce-price-formatted-amount {
+		line-height: 30px;			
+		.component-title {
+			font-size: 15px;
+		}
+		.component-total {
+			font-size: 20px;
+		}
+	}		
+}

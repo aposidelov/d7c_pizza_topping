@@ -1,0 +1,45 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+	position: relative;	
+
+	background: image-url('body-bg.jpg') no-repeat scroll 50% 0 #252523;
+	background-attachment: fixed;
+}
+
+h1 {
+	margin: 20px 0 10px;
+	
+	font-family: "UnitedSansLight";
+	font-size: 50px;
+	font-style: normal;
+  	font-weight: 100;
+
+  	text-align: center;
+  	text-transform: uppercase;
+
+	color: #ffffff;
+}
+
+h2 {
+	color: $orange-dark;
+	font-family: "UnitedSansBold";
+  	text-transform: uppercase;
+}
+
+h3 {
+	color: $orange-dark;
+}
+
+p {
+	//padding-top: 15px;
+
+	font-family: "Roboto";
+	font-size: 14px;
+	color: #ffffff;	
+}
+

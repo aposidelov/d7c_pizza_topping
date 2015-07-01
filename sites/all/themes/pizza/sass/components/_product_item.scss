@@ -1,0 +1,65 @@
+.page-pizza, .node-type-product-display {	
+
+	h1 {
+		display: none;		
+	}	
+
+	.field--name-field-image {
+		float: left;
+	}
+
+	.field--name-title, .field--name-body {
+		float: left;
+		margin-left: 35px;
+		width: 50%;
+	}
+
+	.field--name-title {
+		
+	}
+
+	.field--name-body {
+		float: left;
+		width: 50%;
+				
+		margin-top: 5px;
+
+		color: #ffffff;
+		font-family: "Roboto";
+		font-size: 15px;		
+	}
+
+	table {		
+
+		tr.e-pizza-size {
+			font-size: 18px;
+			padding: 0;
+			height: 60px;
+		}		
+
+		tr.separator td {
+			line-height: 3px;
+		}
+
+		select {
+			color: #000;
+		}
+	}
+
+	.e-pizza-toppings {
+		color: #BDB7B7; //$orange-dark;
+	}	
+
+	.form-item-quantity, .form-type-textfield {
+		width: 100px;
+	}
+
+	select {
+		height: 33px;
+	}
+
+	#edit-submit, #edit-update {
+		display: none;
+	}
+}
+

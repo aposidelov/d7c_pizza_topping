@@ -1,0 +1,25 @@
+img, media {
+  	max-width: 100%;
+}
+
+.messages--status, .messages--error {
+	margin-top: 0px;
+
+  	background-image: image-url('message-icon.png');
+  	border-color: $orange-text-color;
+  	background-color: rgba(0, 0, 0, 0.7);
+  	
+  	color: $white-text-color;
+
+  	em {
+  		color: $orange-text-color;
+  	}
+
+  	a {
+  		color: $green-text-color;
+  	}
+}
+
+.messages--error {
+	background-color: rgba(139, 52, 32, 0.7);
+}

@@ -1,0 +1,45 @@
+.pane-dc-cart-crumbs-pane { 
+	@include pie-clearfix;	
+
+	.checkout-crumbs { 				
+		width: 100%;
+
+		margin: 0px;
+		padding: 0px;
+		display: table;
+
+		li { 
+			@include dark-bg(0.4);
+			
+			position: relative;
+			display: table-cell;
+			height: 59px;			
+
+			background-clip: padding-box;
+
+			font-size: 15px;	
+			color: #ffffff;
+			text-align: center;
+			vertical-align: middle;
+
+			list-style: none;
+
+			.index { 
+				@include circle-bullet();
+			}		
+
+			&.sep {							
+				width: 32px;
+				background: image-url('cart_crumb_separator.png');
+			}				
+
+			&.active { 
+				color: $orange-dark;				
+
+				.index { 
+					background: $orange-dark;
+				}
+			}
+		}
+	}	
+}

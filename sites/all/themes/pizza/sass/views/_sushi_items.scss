@@ -1,0 +1,71 @@
+.view-sushi-items-list {
+	ul.sushi-list {
+		padding: gutter(9);
+
+		list-style: none;		
+
+		li {	
+			@include gallery(4 of 12);
+			
+			margin-bottom: 22px;
+			padding-bottom: 20px;
+
+  			border-bottom: 1px dotted $green-text-color;  			
+
+  			text-transform: uppercase;
+
+			.sushi_item-category { 
+				margin: 0px;
+
+				font-size: 12px;
+
+				text-align: center;
+				
+				a { 
+					color: $green-text-color;
+
+					text-decoration: none;
+				}
+			}
+
+			.sushi_item-title { 
+				margin: 0px 0 12px 0;
+
+				color: $orange-text-color;
+
+				font-size: 14px;
+				font-weight: normal;
+				text-align: center;
+			}			
+			
+			.sushi_item-pp {				
+				margin: 10px 0;
+				
+				color: $white-text-color;
+
+				text-align: center;				
+				font-weight: bold;				
+				
+				.sushi_item-pieces { 
+					font-size: 12px;
+				}
+
+				.sushi_item-price { 
+					font-size: 11px;
+				}
+			}
+
+			.commerce-add-to-cart { 
+				text-align: center;
+
+				.form-wrapper { 
+
+				}
+
+				.form-submit { 					
+					@include site-button();
+				}
+			}
+		}
+	}
+}

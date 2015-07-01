@@ -1,0 +1,83 @@
+/*@import "susy";
+
+$container-style: fixed;
+$grid-padding: 0px;
+$column-width: 6.7em;
+$total-columns: 12;
+$container-width: 980px;
+
+$tablet-width: 768px;
+$tablet-columns: 10;
+$desktop-width: 980px;
+$desktop-columns: 12;
+
+
+body {
+  background: #aaa;
+}
+
+.l-page {
+  max-width: 1400px;
+  min-width: $desktop-width;
+  margin: 0 auto;
+  background: #999;
+  .l-header {
+
+  }
+  .l-main {
+    @include susy-grid-background;
+    @include container;
+    .l-content {
+      @include span-columns(12);
+    }
+    .l-region--sidebar-first {
+      display:none;
+    }
+    .l-region--sidebar-second {
+      display:none;
+    }
+  }
+  .l-footer {
+    @include clearfix;
+  }
+}
+
+  @include at-breakpoint($tablet-width $tablet-columns) {
+    $total-columns: 10;
+    .l-page {
+      .l-main {
+        @include set-container-width;
+        @include susy-grid-background;
+        background: #ffc;
+        .l-content {
+          @include span-columns(7 omega, 10);
+        }
+        .l-region--sidebar-first {
+          @include span-columns(3, 10);
+          display:block;
+        }
+      }
+    }
+  }
+*/
+/*
+  @include at-breakpoint($desktop-width $desktop-columns) {
+    $total-columns: 12;
+    .l-page {
+      .l-main {
+        @include susy-grid-background;
+        @include set-container-width;
+        .l-content {
+          background: #f0c;
+          @include span-columns(8 omega, 12);
+        }
+        .l-region--sidebar-first {
+          @include span-columns(4, 12);
+          display:block;
+        }
+      }
+    }
+  }
+*/
+
+

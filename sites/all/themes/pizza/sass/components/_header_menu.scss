@@ -1,0 +1,69 @@
+.l-header-right-bottom { 
+	@include pie-clearfix;		
+
+	background: rgba(0, 0, 0, 0.7);
+
+	border-radius: 5px;
+
+	margin-top: 18px;
+
+	.menu { 
+		//@include pie-clearfix;		
+		margin: 0;
+  		padding: 0px 0 0px 10px;  		
+
+		li { 			
+			float: left;
+
+			margin-right: 35px;
+			padding: 0px;
+
+			font-size: 12px;
+			text-transform: uppercase;
+			line-height: 15px;			
+
+			list-style: none;
+
+			a { 
+				color: $white-text-color;
+				text-decoration: none;
+
+				&:hover {
+					text-decoration: underline;
+
+					color: $orange-text-color;
+				}
+
+				&.active {
+					color: $orange-text-color;
+				}				
+			}			
+		}
+	}
+
+	address {
+		float: right;		
+
+		margin-right: 10px;
+		line-height: 11px;
+
+		font-size: 13px;
+		font-style: normal;
+
+		color: $white-text-color;
+
+		&:before {
+			content: '';
+			display: inline-block;
+			width: 17px;
+			height: 17px;
+
+			background: image-url('phone.png');
+
+			margin-right: 10px;
+
+			vertical-align: middle;
+		}
+  		  		
+	}
+}

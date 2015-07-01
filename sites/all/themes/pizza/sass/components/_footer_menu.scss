@@ -1,0 +1,47 @@
+.l-footer { 
+	@include pie-clearfix;		
+
+	background: #000000;
+
+	.menu { 
+		//@include pie-clearfix;		
+		margin: 0;
+  		padding: 0px 0 0px 10px;  		
+
+		li { 			
+			float: left;
+				
+			margin-top: 5px;
+			padding-right: 7px;
+  			padding-left: 4px;
+
+			border-right: 1px dotted #fff;
+
+			font-size: 11px;
+			text-transform: uppercase;
+			line-height: 4px;
+			list-style: none;			
+		
+			&:first-child {
+				padding-left: 0px;
+			}
+
+			&:last-child {
+				border-right: none;
+			}
+
+			a { 
+				color: $green-text-color;
+				text-decoration: none;
+
+				&:hover {					
+					color: $white-text-color;
+				}
+
+				&.active {
+					color: $white-text-color
+				}				
+			}			
+		}
+	}
+}
