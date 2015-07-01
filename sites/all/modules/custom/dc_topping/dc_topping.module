@@ -1,0 +1,635 @@
+<?php
+
+define('PIZZA_SIZE_PERSONAL', 6);
+define('PIZZA_SIZE_MEDIUM', 7);
+define('PIZZA_SIZE_LARGE', 8);
+
+/*
+function dc_topping_commerce_product_calculate_sell_price_line_item_alter(&$line_item) {
+  dsm('da:');
+  dsm($_POST);
+  dsm($line_item); 
+}
+*/
+
+/**
+ * Implements hook_init().
+ */
+function dc_topping_init() {    
+
+  $path = libraries_get_path('touchspin');
+  drupal_add_js($path . '/js/jquery.bootstrap-touchspin.js');  
+  drupal_add_css($path . '/css/jquery.bootstrap-touchspin.css');
+
+  // redirects
+  if (arg(0) == 'checkout' && arg(2) == '') {
+    drupal_goto('checkout/'.arg(1).'/checkout');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function dc_topping_menu() {  
+  
+  $items['admin/tc_pizza/settings'] = array(
+    'title' => 'Pizza Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('dc_topping_settings_form'),
+    'access arguments' => array('admin content'),
+    'type' => MENU_CALLBACK,    
+  );
+
+  return $items;  
+}
+
+function dc_topping_settings_form($form, &$form_state) {
+  $form = array();
+
+  $form['dc_own_pizza_default_amount'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('dc_own_pizza_default_amount', 699),
+    '#title' => t('Own-Pizza default price Amount'),   
+  );  
+
+  return system_settings_form($form);
+}
+
+
+/**
+ * Implements hook_entity_property_info_alter().
+ */
+function dc_topping_entity_property_info_alter(&$info) {      
+  //if (isset($properties['bundles']['pizza']['properties']['field_toppings'])) {
+	$info['commerce_line_item']['properties']['field_toppings_qty'] = array(
+		'type' => 'list<integer>',
+		'label' => t('Toppings Qty'),
+		'description' => t('Toppings Qty descripiton'),
+		'getter callback' => 'dc_topping_topping_qtys_get',
+		'setter callback' => 'dc_topping_topping_qtys_set',
+		'schema field' => 'field_toppings_qty',
+	);
+
+	$info['commerce_line_item']['properties']['field_toppings_full_price'] = array(
+		'type' => 'list<integer>',
+		'label' => t('Toppings Full Price'),
+		'description' => t('Full Price (Price * Qty)'),
+		'getter callback' => 'dc_topping_topping_full_price_get',		
+		'computed' => TRUE,
+	);
+}
+
+/**
+ * Implements hook_theme().
+ */
+function dc_topping_theme($existing, $type, $theme, $path) {	
+	return array(    
+    'dc_topping_pizza_form' => array(
+      'render element' => 'form',
+      'template' => 'dc-topping-pizza-form',
+    ),
+    'dc_topping_test_form' => array(
+      'render element' => 'form',
+      'template' => 'dc-topping-test-form',
+    ),
+  );
+}
+
+function dc_topping_preprocess_views_view_field(&$variables) {    
+  if (isset($variables['theme_hook_suggestion']) && (
+    $variables['theme_hook_suggestion'] == 'views_view_field__commerce_cart_form__field_toppings' ||
+    $variables['theme_hook_suggestion'] == 'views_view_field__commerce_cart_block__field_toppings')) {    
+    $output_items = explode('<li>', $variables['output']);    
+    $line_item_id = $variables['row']->commerce_line_item_field_data_commerce_line_items_line_item_;
+    $size = $variables['row']->field_field_pizza_size[0]['raw']['tid'];
+    
+    // get default Qty by Pizza size tid
+    $default_qty = 0;
+    if ($size == PIZZA_SIZE_PERSONAL) {
+      $default_qty = 1;
+    } elseif ($size == PIZZA_SIZE_MEDIUM) {
+      $default_qty = 2;
+    } elseif ($size == PIZZA_SIZE_LARGE) {
+      $default_qty = 3;
+    }
+
+    foreach ($variables['row']->field_field_toppings as $key => $data) {
+      $tid = $data['raw']['tid'];
+      $topping_qty = dc_topping_get_topping_qty($line_item_id, $tid);      
+      $overriden_qty_output = ($topping_qty != $default_qty) ? 
+      '<span class="qty-overriden">'.$topping_qty.'</span>' : '';
+      if (isset($output_items[$key+1])) {
+        $output_items[$key+1] = $overriden_qty_output . $output_items[$key+1];      
+      }
+    }    
+
+    $variables['output'] = implode('<li>', $output_items);
+  }
+}
+
+/**
+ * Implements hook_extra_fields().
+ */
+function dc_topping_field_extra_fields() {
+  $entity_type = 'node';
+  $entity_bundle = 'product_display';
+  $extra[$entity_type][$entity_bundle] = array(    
+    'display' => array(
+      'product_display_price' => array(
+        'label' => t('Product fDisplay Price'),
+        'description' => t('Product Display Price description'),   
+        'weight' => 0,
+      ),
+    ),
+    'form' => array(
+      'product_display_price' => array(
+        'label' => t('Product Display Price'),
+        'description' => t('Product Display Price description'),
+        'weight' => 0,
+      ),      
+    ),
+  );  
+
+  return $extra;
+}
+
+/**
+ * Implements hook_entity_view().
+ */
+function dc_topping_entity_view($entity, $type, $view_mode, $langcode) {
+  if ($type == 'node' && $entity->type == 'product_display') {
+    $entity->content['product_display_price'] = array(
+      '#prefix' => '<div class="e-price_total_display">',
+      '#suffix' => '</div>',
+      '#markup' => dc_topping_product_get_default_price($entity->nid),
+      '#weight' => 10,    
+    );
+  }
+}
+
+/**
+ * Implements hook_preprocess_taxonomy_term().
+ */
+function dc_topping_preprocess_node(&$variables) {   
+  if (!isset($variables['view']) || 
+      !isset($variables['sticky'])) {
+    return;
+  }
+  $view_name = $variables['view']->name;
+  if ($view_name == 'pizza_list' && $variables['sticky']) {
+    $own_pizza_default_amount = variable_get('dc_own_pizza_default_amount', 699);
+    $variables['content']['product_display_price']['#markup'] = commerce_currency_format($own_pizza_default_amount, 'USD');
+    $variables['content']['node_link'][0]['#markup'] = l(t('Get Started'), 'node/'.$variables['nid']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_taxonomy_term().
+ */
+function dc_topping_preprocess_taxonomy_term(&$variables) {  
+  if ($variables['view_mode'] == 'full') {    
+    $variables['page'] = TRUE;        
+    $variables['content']['field_image'][0]['#item']['title'] = $variables['term_name'];
+  }
+}
+
+/**
+ * Implements hook_preprocess_dc_topping_pizza_form().
+ */
+function dc_topping_preprocess_dc_topping_pizza_form(&$variables) {	  
+  $variables['quantity_element'] = $variables['form']['quantity'];
+  unset($variables['form']['quantity']);
+  unset($variables['quantity_element']['#title']);
+	$variables['size_element'] = $variables['form']['line_item_fields']['field_pizza_size']['und'];
+  unset($variables['size_element']['#title']);
+  $variables['product_ref_element'] = $variables['form']['line_item_fields']['field_product_display_reference']['und'];
+  $variables['size_price_element'] = $variables['form']['line_item_fields']['field_pizza_price']['und'];
+  $variables['size_image_element'] = $variables['form']['line_item_fields']['field_pizza_image']['und'];
+  $variables['checkboxes_element'] = $variables['form']['line_item_fields']['field_toppings']['und'];
+	unset($variables['checkboxes_element']['#title']);
+	$variables['qtys_element'] = $variables['form']['line_item_fields']['field_toppings_qty']['und'];
+  $variables['price_element'] = $variables['form']['line_item_fields']['field_toppings_price']['und'];
+  $variables['image_element'] = $variables['form']['line_item_fields']['field_toppings_image']['und'];
+  unset($variables['form']['line_item_fields']);  
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function dc_topping_form_alter(&$form, &$form_state, $form_id) {     
+ 
+  // auto fill "product node referrence" field when open Product node
+  if ((isset($form_state['build_info']['base_form_id']) && 
+    $form_state['build_info']['base_form_id'] == 'commerce_cart_add_to_cart_form')) {
+    $field_product_ref    = &$form['line_item_fields']['field_product_display_reference']['und'][0]['target_id'];    
+    $nid = arg(1);
+    $title = db_query('SELECT title FROM {node} WHERE nid = :nid', array(':nid' => $nid))->fetchField();
+    $field_product_ref['#default_value'] = t('!title (!nid)', array('!title' => $title, '!nid' => $nid));        
+  } 
+
+  if ($form_id == 'views_form_commerce_cart_form_default') {    
+    //drupal_add_js(array('admin_menu' => array('suppress' => 1)), 'setting');
+    if (arg(0) == 'admin') {
+      return;
+    }    
+
+
+    $tax = commerce_tax_rate_load('tax');    
+    $tax_rate = isset($tax['rate']) ? $tax['rate'] : '';
+
+    drupal_add_js(array('taxRate' => $tax_rate), 'setting');
+    drupal_add_js(drupal_get_path('module', 'dc_topping') . '/cart_page.js');
+  } 
+
+  if ( (isset($form_state['build_info']['base_form_id']) && 
+  	$form_state['build_info']['base_form_id'] == 'commerce_cart_add_to_cart_form') ||
+  	$form_id == 'commerce_lie_edit_line_item_form'
+  	) {    
+    
+  	$form['#theme'] = 'dc_topping_pizza_form';
+
+    $form['#attributes']['class'][] = 'dc-product-pizza-form';
+    
+    drupal_add_js(drupal_get_path('module', 'dc_topping') . '/dc_topping.js');
+    //drupal_add_js(array('admin_menu' => array('suppress' => 1)), 'setting');
+    
+  	$field_toppings 		  = &$form['line_item_fields']['field_toppings'];
+    $field_toppings_price = &$form['line_item_fields']['field_toppings_price'];
+    $field_toppings_image = &$form['line_item_fields']['field_toppings_image'];
+    $field_pizza_price    = &$form['line_item_fields']['field_pizza_price'];
+    $field_pizza_image    = &$form['line_item_fields']['field_pizza_image'];    
+    $field_product_ref    = &$form['line_item_fields']['field_product_display_reference']['und'][0]['target_id'];
+    $field_product_ref['#access'] = FALSE;
+  	// prepare quality textfields container
+    $field_toppings_qty = &$form['line_item_fields']['field_toppings_qty'];
+  	$field_toppings_qty['#type'] = $field_toppings_price['#type'] = $field_toppings_image['#type'] = 'container';
+  	$field_toppings_qty['#tree'] = $field_toppings_price['#tree'] = $field_toppings_image['#tree'] = TRUE;
+    $field_toppings_qty['#language'] = $field_toppings_price['#language'] = $field_toppings_image['#language'] = 'und';
+
+    $field_toppings_qty['#commerce_cart_settings']['field_access'] =
+    $field_toppings_price['#commerce_cart_settings']['field_access'] =
+    $field_pizza_price['#commerce_cart_settings']['field_access'] =
+    $field_pizza_image['#commerce_cart_settings']['field_access'] =
+    $field_toppings_image['#commerce_cart_settings']['field_access'] = TRUE;
+  	 
+    $field_size_element = &$form['line_item_fields']['field_pizza_size']['und'];    
+    $default_size_value = $field_size_element['#default_value'][0];
+    $field_size_element['#attributes']['data-size-prev'] = $default_size_value;
+
+    $size_data = array();
+    // prepare detail term values from Pizza size field to use in JS
+    
+    foreach ($field_size_element['#options'] as $tid => $term_name) {      
+      if ($tid !== '_none') {
+        $size = entity_load_single('taxonomy_term', $tid);
+        $size_wrapper = entity_metadata_wrapper('taxonomy_term', $size);
+        $image_style = 'ingredient_thumbail';
+        $uri = $size_wrapper->field_image->value()['uri'];
+        $url = image_style_url($image_style, $uri);
+        
+        $size_data[$tid] = array(
+          'qty' => $size_wrapper->field_topping_quantity->value(),
+          'amount' => $size_wrapper->field_price->amount->value(),
+          'imageUrl' => $url,
+          'currency' => commerce_currency_get_symbol($size_wrapper->field_price->currency_code->value()),
+          'formattedAmount' => commerce_currency_format(
+            $size_wrapper->field_price->amount->value(), 
+            $size_wrapper->field_price->currency_code->value()
+          ),
+        );
+      }
+    }
+    drupal_add_js(array('sizeData' => $size_data), 'setting');
+    
+    // prepare default Pizza Size values to use in Topping table on the form
+    $default_size_tid = $field_size_element['#default_value'][0];
+    $amount = $size_data[$default_size_tid]['amount'];
+    $formatted_amount = $size_data[$default_size_tid]['formattedAmount'];
+    $pizza_base_path = drupal_get_path('theme', 'pizza').'/images/pizza-base.png';
+    // Pizza size - Price & Image will be shown on Toppings table
+    $field_pizza_price['und'] = array(        
+        '#type' => 'item',
+        '#markup' => '<span class="ingredient-price" '.drupal_attributes(array('data-amount' => $amount)).'>'. $formatted_amount . '</span>',
+      );
+    $field_pizza_image['und'] = array(        
+      '#type' => 'item',
+      '#markup' => theme('image', array('path' => $pizza_base_path, 'attributes' => array('class' => 'image size-'.$default_size_tid,))),
+    );
+
+    // put "update quantity handler" before calculating sellprice
+    array_splice($form['#submit'], 1, 0, array('dc_topping_qty_update_submit'));
+    $form['#submit'][] = 'commerce_lie_recalculate_sellprice_submit';
+
+    // sort toppings in a way that all checked should go first in the list
+    $all_toppings = array_keys($field_toppings['und']['#options']);
+    $checked_toppings = $field_toppings['und']['#default_value'];
+    $unchecked_toppings = array_diff($all_toppings, $checked_toppings);    
+    $all_toppings = array_merge($checked_toppings, $unchecked_toppings);    
+    $ordered_toppings = array();
+    foreach ($all_toppings as $tid) {
+      $ordered_toppings[$tid] = $field_toppings['und']['#options'][$tid];
+    }
+    $field_toppings['und']['#options'] = $ordered_toppings;
+
+    // prepare qualities default values in an array 
+  	$defult_qtys = array();
+  	if (isset($form_state['line_item']->line_item_id)) {
+  		$defult_qtys = dc_topping_get_topping_qtys($form_state['line_item']->line_item_id);      
+  	} 
+    $topping_prices = array();
+    // generate quality fields for each topping item
+    // also create static containers like topping image, price and title
+  	foreach ($field_toppings['und']['#options'] as $tid => $term_name) {
+  		$term = entity_load_single('taxonomy_term', $tid);
+      $term_wrapper = entity_metadata_wrapper('taxonomy_term', $term);
+
+      $amount = $term_wrapper->field_price->amount->value();
+      $topping_prices[$tid] = $amount;
+      $code = $term_wrapper->field_price->currency_code->value();
+      $formatted_amount = commerce_currency_format($amount, $code);
+      
+      $image_style = 'ingredient_thumbail';
+      $uri = $term_wrapper->field_image->value()['uri'];
+      $url = image_style_url($image_style, $uri);      
+      // if product is created & topping is checked - fill quality 
+      // texfields with default values from node-product bundle
+      // if product is edited  & topping is checked - fill quality 
+      // texfields with numbers from database
+      $field_toppings_qty['und'][$tid] = array(
+  			'#type' => 'textfield',
+  			'#default_value' => isset($defult_qtys[$tid]) ? $defult_qtys[$tid] : (int)in_array($tid, $field_toppings['und']['#default_value']),
+        '#size' => 5,
+        '#attributes' => array('class' => array('topping-qty')),
+			);
+      $field_toppings_price['und'][$tid] = array(        
+        '#type' => 'item',
+        '#markup' => '<span class="ingredient-price" '.drupal_attributes(array('data-amount' => $amount)).'>'. $formatted_amount . '</span>',
+      );
+      $field_toppings_image['und'][$tid] = array(        
+        '#type' => 'item',
+        '#markup' => theme('image', array('path' => $url)),
+      );
+  	}   
+        
+    drupal_add_js(array('toppingPrices' => $topping_prices), 'setting');
+  }
+}
+
+/**
+ * Implements hook_commerce_cart_product_remove().
+ */
+function dc_topping_commerce_cart_product_remove($order, $product, $quantity, $line_item) {
+  $line_item_id = $line_item->line_item_id;
+  db_query('DELETE FROM {dc_topping_qty} WHERE entity_id = :entity_id', 
+		array(':entity_id' => $line_item_id)
+	);
+}
+
+function dc_topping_get_topping_qty($line_item_id, $topping_tid) {
+  $qty = db_query('SELECT qty FROM {dc_topping_qty} 
+    WHERE entity_id = :entity_id AND tid = :tid', 
+    array(':entity_id' => $line_item_id, ':tid' => $topping_tid))->fetchField();  
+  
+  return $qty;
+}
+
+function dc_topping_get_topping_qtys($line_item_id) {
+  $defult_qtys = array();
+  $data = db_query('SELECT tid, qty FROM {dc_topping_qty} WHERE entity_id = :entity_id', array(':entity_id' => $line_item_id));
+  foreach ($data as $item) {
+    $defult_qtys[$item->tid] = $item->qty;
+  }
+
+  return $defult_qtys;
+}
+
+function dc_topping_qty_update_submit($form, &$form_state) {	
+  //dsm('qty 2');
+	$line_item = $form_state['line_item'];  
+	$tids = array();
+	$qtys = $form_state['values']['line_item_fields']['field_toppings_qty']['und'];
+  //dsm($qtys);
+  $result = array();
+  foreach ($form_state['values']['line_item_fields']['field_toppings']['und'] as $term) {
+		$result[$term['tid']] = $qtys[$term['tid']];
+	}	
+	// remove unchecked toppings
+	//$qtys = array_diff_key($qtys, $tids);  
+	$line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);    
+	$line_item_wrapper->field_toppings_qty->set($result);  
+}
+
+function dc_topping_product_get_default_price($product_nid) {
+  $product_node = entity_load_single('node', $product_nid);
+  $product_node_wrapper = entity_metadata_wrapper('node', $product_node);
+  $amount = 0;
+  foreach ($product_node_wrapper->field_toppings as $term) {
+    $amount += $term->field_price->amount->value();
+  }
+  $amount += $product_node_wrapper
+              ->field_pizza_size
+              ->field_price
+              ->amount
+              ->value();
+
+  return commerce_currency_format($amount, 
+    $product_node_wrapper
+    ->field_pizza_size
+    ->field_price
+    ->currency_code
+    ->value()
+  );
+}
+
+/**
+ * Gets the property value. May be used as 'getter callback'.
+ */
+function dc_topping_topping_full_price_get($line_item, array $options, $name, $entity_type) {		
+
+	$line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+	$line_item_id = $line_item_wrapper->getIdentifier();
+	
+  $data = dc_topping_get_topping_qtys($line_item_id);
+
+	$result = array();
+	foreach ($data as $tid => $qty) {
+		$term = entity_load_single('taxonomy_term', $tid);
+				
+		$result[$tid] = $term->field_price['und'][0]['amount'] * $qty;
+	}  
+
+	return $result;
+}
+
+/**
+ * Gets the property value. May be used as 'getter callback'.
+ */
+function dc_topping_topping_qtys_get($line_item, array $options, $name, $entity_type) {		
+	$line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+	$line_item_id = $line_item_wrapper->getIdentifier();	
+  $result = dc_topping_get_topping_qtys($line_item_id);
+
+	return $result;
+}
+
+/**
+ * Sets the property to the given value. May be used as 'setter callback'.
+ */
+function dc_topping_topping_qtys_set(&$line_item, $name, $qtys, $langcode, $type, $info) {  
+	$line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+	$entity_id = $line_item_wrapper->getIdentifier();	
+	
+	db_query('DELETE FROM {dc_topping_qty} WHERE entity_id = :entity_id', 
+		array(':entity_id' => $entity_id)
+	);
+  
+	foreach ($line_item->field_toppings['und'] as $topping) {
+		$tid = $topping['tid'];			
+		if (isset($qtys[$tid]) && $qtys[$tid] > 0) {
+			db_query('INSERT INTO {dc_topping_qty} (entity_id, tid, qty) 
+								VALUES (:entity_id, :tid, :qty)', 
+				array(
+					':entity_id' => $entity_id,
+					':tid' => $tid, 
+					':qty' => $qtys[$tid]
+				)			
+			);
+		}
+		/*
+		$is_exists = db_query('SELECT COUNT(*) FROM {dc_topping_qty} WHERE entity_id = :entity_id AND tid = :tid', array(':entity_id' => $entity_id, ':tid' => $tid))->fetchField();
+		if ($is_exists) {
+			db_query('UPDATE {dc_topping_qty} SET qty = :qty WHERE entity_id = :entity_id AND tid = :tid', array(':qty' => $qtys[$tid], ':entity_id' => $entity_id, ':tid' => $tid));
+		} else {
+			db_query('INSERT INTO {dc_topping_qty} (entity_id, tid, qty) VALUES (:entity_id, :tid, :qty)', array(':entity_id' => $entity_id, ':tid' => $tid, ':qty' => $qtys[$tid]));			
+		}
+		*/
+	}	
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+/*function dc_topping_page_alter(&$page) {  
+  //dsm($page);
+  if (!isset($page['content']['system_main']['nodes'])) {
+    return;
+  }  
+  foreach ($page['content']['system_main']['nodes'] as &$node) {
+    if (isset($node['links']['node']['#links']) && $node['#view_mode'] == 'teaser') {
+      $node['links']['node']['#links']['node-readmore']['title'] = t('Order now');
+    }
+  }
+}*/
+
+/**
+ * Implements hook_menu().
+ */
+/*
+function dc_topping_menu() {	
+	
+  $items['admin/test-form'] = array(
+    'title' => 'Test form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('dc_topping_test_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,    
+  );  
+
+  return $items;  
+}
+
+function dc_topping_test_form($form, &$form_state) {
+  $form = array();
+
+  $form['#theme'] = 'dc_topping_test_form';
+
+  $form['qty'] = array(
+    '#type' => 'textfield',
+    '#default_value' => 4,
+    '#title' => t('Qty'),   
+  );
+  
+  $form['tid'] = array(
+    '#type' => 'textfield',
+    '#default_value' => 0,
+    '#title' => t('Tid'),   
+  );
+
+  $form['text1'] = array(
+    '#type' => 'textfield',
+    '#default_value' => 0,
+    '#title' => t('Text 1'),   
+  );
+  $form['text2'] = array(
+    '#type' => 'textfield',
+    '#default_value' => 2,
+    '#title' => t('Text 2'),   
+  );
+  $form['text3'] = array(
+    '#type' => 'textfield',
+    '#default_value' => 5,
+    '#title' => t('Text 3'),   
+  );
+
+
+  $form['toppings'] = array(
+    '#type' => 'checkboxes',
+    '#default_value' => array(),
+    '#title' => t('Title'),
+    '#description' => t(''),
+    '#options' => array(1 => 'Item 1', 2 => 'Item 2', 3 => 'Item 3',),
+  );
+  
+  $form['save1'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save1'),  
+  );
+  
+  
+  $form['save2'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save2'),  
+  );
+  
+
+  return $form;
+}
+*/
+
+function dc_topping_test_form_submit($form, &$form_state) {
+  $qty = $form_state['values']['qty'];
+  $tid = $form_state['values']['tid'];    
+  //dsm($form_state['values']);
+  /*
+  if ($form_state['clicked_button']['#parents'][0] == 'save1') {
+    $line_item_id = 4;
+    $line_item = entity_load_single('commerce_line_item', $line_item_id);
+    $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+
+    //dsm($line_item_wrapper->getPropertyInfo());
+    //dsm($line_item_wrapper->field_toppings->value());    
+    //dsm($line_item_wrapper->field_toppings_qty->value());
+    dsm($line_item_wrapper->field_toppings_full_price->value());
+    
+    
+    //$line_item_wrapper->field_toppings_qty->set(array(222,333));
+    //dsm($line_item_wrapper->value());
+    
+  } elseif ($form_state['clicked_button']['#parents'][0] == 'save2') {
+    dsm('$tid');
+    dsm($tid); 
+
+    $line_item_id = 4;
+    $line_item = entity_load_single('commerce_line_item', $line_item_id);
+    $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+
+    $line_item_wrapper->field_toppings_qty->set(array(
+    		1 => 3, // +
+    		2 => 1,
+    		3 => 2,
+    		4 => 4, // +
+    		5 => 3,
+    	)
+    );
+  }*/
+}

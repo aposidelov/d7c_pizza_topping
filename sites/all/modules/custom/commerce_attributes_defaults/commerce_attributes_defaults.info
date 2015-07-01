@@ -1,0 +1,5 @@
+name = Commerce Attributes Defaults
+description = Provide Commerce Attributes Defaults functionality for Pizza project.
+package = Pizza
+core = 7.x
+; Files

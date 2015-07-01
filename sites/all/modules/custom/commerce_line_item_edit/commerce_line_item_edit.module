@@ -1,0 +1,247 @@
+<?php
+
+/**
+ * @file
+ * Defines an edit form for commerce line items.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_line_item_edit_menu() {
+  $items['admin/commerce/line-item/%commerce_line_item/edit'] = array(
+    'title callback' => 'commerce_line_item_edit_title',
+    'title arguments' => array(3, 'Edit'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_line_item_edit_edit_line_item_form', 3, array()),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['commerce/line-item/%commerce_line_item/view'] = array(
+    'title callback' => 'commerce_line_item_edit_title',
+    'title arguments' => array(2, 'view'),
+    'page callback' => 'commerce_line_item_edit_view',
+    'page arguments' => array(2),
+    //'access arguments' => TRUE,//'view any order entity',
+    'access callback' => TRUE,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['line-item/%commerce_line_item/edit-ajax'] = array(
+    'delivery callback' => 'ajax_deliver',
+    'page callback' => 'commerce_line_item_edit_edit_line_item_ajax',
+    'access callback' => TRUE,
+    'page arguments' => array(1),
+  );
+  $items['line-item/ajax-form-callback'] = array(
+    'title' => 'AHAH callback',
+    'page callback' => 'commerce_line_item_edit_ajax_form_callback',
+    'delivery callback' => 'ajax_deliver',
+    'access callback' => TRUE,
+    'theme callback' => 'ajax_base_page_theme',
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Menu item title callback.
+ *
+ * @param $line_item
+ *   The line_item object.
+ * @return string
+ *   A page title.
+ */
+function commerce_line_item_edit_title($line_item, $op) {
+  return t(($op == 'view' ? '' : ucwords($op) . ' ') . '@type Line Item', array('@type' => ucwords(str_replace('_', ' ', $line_item->type))));
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function commerce_line_item_edit_entity_info_alter(&$entity_info) {
+  $entity_info['commerce_line_item']['form callback'] = 'commerce_line_item_edit_edit_line_item_form';
+}
+/**
+ *
+ */
+function commerce_line_item_edit_view($line_item) {
+  dpm(entity_view('commerce_line_item', array($line_item)));
+  return entity_view('commerce_line_item', array($line_item));
+}
+/**
+ * Form to edit a commerce line item.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param array $form_state
+ *   A keyed array containing the current state of the form.
+ * @param object $commerce_line_item
+ *   An commerce line item object that is currently being editted.
+ * @param array $hidden_fields
+ *   An arry of fields that shouldn't be rendered on the form. This is used by
+ *   the edit line item views field handler. It allows us to render a line item
+ *   edit form with only specific fields shown.
+ */
+function commerce_line_item_edit_edit_line_item_form($form, &$form_state, $commerce_line_item, $hidden_fields) {
+  if (!isset($form_state['line_item'])) {
+    if (!isset($line_item->title)) {
+      $line_item->title = NULL;
+    }
+    $form_state['line_item'] = $line_item;
+  }
+  else {
+    $line_item = $form_state['line_item'];
+  }
+  $ajax_id = drupal_html_id('commerce-line-item-ajax-wrapper');
+
+  // Replace the entire form on AJAX save.
+  $form['#prefix'] = '<div id="' . $ajax_id . '">';
+  $form['#suffix'] = '</div>';
+  // Add the buttons.
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    /*'#ajax' => array(
+      'callback' => 'commerce_line_item_edit_edit_line_item_form_ajax',
+      'wrapper' => $ajax_id,
+      'method' => 'replace',
+    ),
+    '#attached' => array('js' => array(drupal_get_path('module', 'commerce_line_item_edit') . '/commerce_line_item_edit.js')),
+    */
+    '#weight' => 100,
+  );
+
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+  $price_without_toppings = $line_item_wrapper->commerce_product->commerce_price->value();
+  $price_with_toppings = commerce_price_wrapper_value($line_item_wrapper, 'commerce_unit_price', TRUE);  
+
+  $form['price_without_toppings'] = array(
+    '#type' => 'item',
+    '#title' => t('One Pizza price without toppings'),
+    '#markup' => commerce_currency_format($price_without_toppings['amount'], $price_without_toppings['currency_code']),
+  );
+
+  $form['price_with_toppings'] = array(
+    '#type' => 'item',
+    '#title' => t('One Pizza price with toppings'),
+    '#markup' => commerce_currency_format($price_with_toppings['amount'], $price_with_toppings['currency_code']),
+  );
+  
+  $form['quantity'] = array(
+    '#title' => t('Quantity'),
+    '#type' => 'textfield',    
+    '#default_value' => floor($line_item->quantity),
+    '#size' => 60,
+    '#datatype' => 'integer',
+    '#maxlength' => 128,
+    '#required' => TRUE,    
+  );
+  
+  // Add the line item's fields to a container on the form.
+  $form['line_item_fields'] = array(
+    '#type' => 'container',
+    '#parents' => array('line_item_fields'),
+    '#weight' => 10,
+    '#tree' => TRUE,
+  );
+  
+  field_attach_form('commerce_line_item', $form_state['line_item'], $form['line_item_fields'], $form_state);
+  if (!user_access('administer line items') || TRUE) {
+    $no_access = array(
+      'commerce_unit_price',
+      'commerce_total',
+      'commerce_product',
+      'commerce_display_path',
+    );
+  }
+  else {
+    $no_access = array();
+  }
+
+  if (isset($hidden_fields) && is_array($hidden_fields)) {
+    $hidden_fields = str_replace('quantity', 'quantity_section', $hidden_fields);
+    foreach ($hidden_fields as $hidden_field) {
+      unset($form[$hidden_field]);
+    }
+  }
+
+  foreach ($no_access as $field_name) {
+    $form['line_item_fields'][$field_name]['#access'] = FALSE;
+  }
+  return $form;
+}
+/**
+ * Submit the line item.
+ */
+function commerce_line_item_edit_edit_line_item_form_validate($form, &$form_state) {
+  if (isset($form_state['values']['quantity'])) {
+    $quantity = $form_state['values']['quantity'];
+    if (!(is_numeric($quantity))) {
+      form_set_error('quantity', t('Quantity must have an integer value'));
+    }
+    elseif ($quantity < 0) {
+      form_set_error('quantity', t('Quantity cannot be a negative number'));
+    }
+    $form_state['values']['quantity'] = intval($quantity);
+  }
+}
+/**
+ * Submit the line item.
+ */
+function commerce_line_item_edit_edit_line_item_form_submit($form, &$form_state) {
+  $line_item_id = $form_state['line_item']->line_item_id;
+  $quantity = isset($form_state['values']['quantity']) ? $form_state['values']['quantity'] : -1;
+  if ($quantity == 0) {
+    commerce_line_item_delete($line_item_id);
+    return;
+  }
+  $line_item = commerce_line_item_load($line_item_id);
+  entity_form_submit_build_entity('commerce_line_item', $commerce_line_item, $form, $form_state);
+  //$commerce_line_item->quantity = $quantity;
+  commerce_line_item_save($line_item);
+}
+/**
+ * Remove the line item.
+ */
+function commerce_line_item_edit_edit_line_item_form_remove($form, &$form_state) {
+  $line_item_id = $form_state['line_item']->line_item_id;
+  commerce_line_item_delete($line_item_id);
+}
+/**
+ * Ajax callback.
+ */
+function commerce_line_item_edit_edit_line_item_form_ajax($form, $form_state) {
+  if (!form_get_errors()) {
+    $form['result'] = array('#markup' => '<div class="messages status toast">' . t('Line item saved successfully') . '</div>');
+  }
+  return $form;
+}
+
+
+/**
+ * Implements hook_views_api().
+ */
+function commerce_line_item_edit_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'commerce_line_item_edit') . '/includes/views',
+  );
+}
+/**
+ * Implements hook_form_alter().
+ */
+function commerce_line_item_edit_form_alter(&$form, &$form_state, $form_id) {
+  if (strpos($form_id, 'views_form_commerce_cart_form') === 0) {
+    if (isset($form['edit_delete'])) {
+      foreach ($form['edit_delete'] as &$element) {
+        if (is_array($element)) {
+          // Make sure there are no validation errors when removing something
+          // from the cart.
+          $element['#limit_validation_errors'] = array();
+        }
+      }
+    }
+  }
+}

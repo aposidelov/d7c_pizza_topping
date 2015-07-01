@@ -1,0 +1,5 @@
+name = Drupal Commerce Extra
+description = Provide extra api to simplify custom modules/themes for Drupal Commerce.
+package = Sushi
+core = 7.x
+; Files

@@ -1,0 +1,4 @@
+name = TS JS Test
+description = "TS JS Test Example"
+package = TS
+core = 7.x

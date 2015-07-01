@@ -1,0 +1,6 @@
+name = Dc Pane
+description = Provide custom panes for Pizza project
+package = Pizza
+core = 7.x
+dependencies[] = commerce_checkout
+; Files

@@ -1,0 +1,172 @@
+<?php
+/**
+ * Implements hook_menu().
+ */
+function ts_js_test_menu() {
+  $items = array();
+
+  $items['js1/ts_js_test/ts_somefunction'] = array(
+    'page callback' => 'ts_js_dis_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['ts_js_test/page'] = array(
+    'page callback' => 'ts_js_test_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['pr_big_page'] = array(
+    'page callback' => 'pr_big_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['pr_big_form_ajax'] = array(
+    'page callback' => 'pr_big_form_ajax',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'delivery callback' => 'ajax_deliver',
+  );
+
+  $items['ts_js_test/page'] = array(
+    'page callback' => 'ts_js_test_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['ts_js/%'] = array(
+    'page callback' => 'ts_js_ajax_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'delivery callback' => 'ajax_deliver',
+  );
+
+  return $items;
+}
+
+function pr_big_page() {
+  $form = drupal_get_form('pr_big_form');
+  return $form;
+}
+
+function pr_big_form($form, &$form_state) {
+  $form = array();
+  $form['#theme'] = 'pr_form';
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'ts_js_test').'js/pr_big.js',
+  );
+  $options = array(
+    'ch1' => 'Choice 1',
+    'ch2' => 'Choice 2',
+    'ch3' => 'Choice 3',
+  );
+  $form['choices'] = array(
+    //'#tree' => TRUE,
+    '#type' => 'checkboxes',
+    '#options' => $options,
+    '#default_value' => array('ch1' => 'ch1', 'ch2' => 0, 'ch3' => 0),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Save',
+    //'#submit' => array('pr_big_form_submit'),
+    '#ajax' => array('path' => 'pr_big_form_ajax'),
+  );
+
+  return $form;
+}
+
+function theme_pr_form($variables) {
+  $form = $variables['form'];
+  $output = 'Hello';
+  $output .= drupal_render($form['choices']['ch1']);
+  $output .= 'Hello222';
+  $output .= drupal_render_children($form);
+  return $output;
+}
+
+function pr_big_form_submit($form, &$form_state) {
+  drupal_set_message('<pre>'.print_r($form_state['values'], TRUE).'</pre>');
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ts_js_test_theme($existing, $type, $theme, $path) {
+  return array(
+    'pr_form' => array(
+      'render element' => 'form',
+      'template' => 'pr-form',
+    ),
+  );
+}
+
+function pr_big_form_ajax() {
+  list($form, $form_state) = ajax_get_form();
+  watchdog('ffs', '<pre>'.print_r($form_state, TRUE).'</pre>');
+  $choices = $form_state['input']['choices'];
+  $commands = array();
+  //$commands[] = ajax_command_html('#full-node-shoppingcart', $shoppingcart);
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+function ts_js_ajax_page($id) {
+  $prev_link = '';
+  $next_link = l(t('Next link'), 'ts_js/'.($id + 1), array('attributes' => array('class' => array('use-ajax'))));
+  if ($id > 1) {
+    $prev_link = l(t('prev link'), 'ts_js/'.($id - 1), array('attributes' => array('class' => array('use-ajax'))));
+  }
+  $commands[] = ajax_command_html('.pane-content', $prev_link . ' : ' . $id . ' : ' .$next_link);
+  return array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
+}
+
+/**
+ * Implements hook_js().
+ */
+function ts_js_test_js() {
+  return array(
+    'ts_somefunction' => array(
+      'callback' => 'ts_js_en_callback',
+      'includes' => array('common', 'theme', 'unicode'),
+      'dependencies' => array('devel', 'filter', 'user'),
+    ),
+  );
+}
+
+function ts_js_dis_callback() {
+  $message = 'Hello world 1 -- JS module disabled';
+  $output_data = array('status' => TRUE, 'data' => $message);
+  drupal_json_output($output_data);
+}
+
+
+function ts_js_en_callback() {
+  $message = 'Hello world 1 -- JS module enabled';
+  $output_data = array('status' => TRUE, 'data' => $message);
+  return $output_data;
+}
+
+function ts_js_callback() {
+  $message = 'Hello world 1 -- JS module enabled';
+  $output_data = array('status' => TRUE, 'data' => $message);
+  return $output_data;
+}
+
+function ts_js_test_page() {
+  // Add libraries
+  drupal_add_library('system', 'drupal.ajax');
+  drupal_add_library('system', 'jquery.form');
+  drupal_set_title('JS Test Page');
+  $path = drupal_get_path('module', 'ts_js_test');
+  drupal_add_js($path.'/ts_js_test.js');
+  $link = l(t('Next link'), 'ts_js/1', array('attributes' => array('class' => array('use-ajax'))));
+  $output = '<a class="ajax_button" href="#">Ajax Call</a>';
+
+  $output .= '<div class="pane-content">'.$link.'</div>';
+
+  return $output;
+}
+

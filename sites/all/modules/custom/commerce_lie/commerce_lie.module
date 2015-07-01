@@ -1,0 +1,226 @@
+<?php
+
+/**
+ * @file
+ * Defines an edit form for commerce line items.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_lie_menu() {
+  $items['pizza/%commerce_line_item/edit'] = array(
+    'title callback' => 'commerce_lie_title',
+    'title arguments' => array(1, 'Edit'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_lie_edit_line_item_form', 1, array()),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Menu item title callback.
+ *
+ * @param $line_item
+ *   The line_item object.
+ * @return string
+ *   A page title.
+ */
+function commerce_lie_title($line_item, $op) {
+  return t(($op == 'view' ? '' : ucwords($op) . ' ') . ' @title ' . '@type', array('@title' => $line_item->line_item_label, '@type' => ucwords(str_replace('_', ' ', $line_item->type))));
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function commerce_lie_entity_info_alter(&$entity_info) {
+  $entity_info['commerce_line_item']['form callback'] = 'commerce_lie_edit_line_item_form';
+}
+/**
+ *
+ */
+function commerce_lie_view($line_item) {
+  dpm(entity_view('commerce_line_item', array($line_item)));
+  return entity_view('commerce_line_item', array($line_item));
+}
+/**
+ * Form to edit a commerce line item.
+ *
+ * @param array $form
+ *   An associative array containing the structure of the form.
+ * @param array $form_state
+ *   A keyed array containing the current state of the form.
+ * @param object $line_item
+ *   An commerce line item object that is currently being editted.
+ * @param array $hidden_fields
+ *   An arry of fields that shouldn't be rendered on the form. This is used by
+ *   the edit line item views field handler. It allows us to render a line item
+ *   edit form with only specific fields shown.
+ */
+function commerce_lie_edit_line_item_form($form, &$form_state, $line_item, $hidden_fields) {
+  if (!isset($form_state['line_item'])) {
+    if (!isset($line_item->title)) {
+      $line_item->title = NULL;
+    }
+    $form_state['line_item'] = $line_item;
+  }
+  else {
+    $line_item = $form_state['line_item'];
+  }
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+  
+  $ajax_id = drupal_html_id('commerce-line-item-ajax-wrapper');
+
+  // Replace the entire form on AJAX save.
+  $form['#prefix'] = '<div id="' . $ajax_id . '">';
+  $form['#suffix'] = '</div>';
+  // Add the buttons.
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['update'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update'),    
+    '#weight' => 100,
+  );  
+
+  /*
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),    
+    '#ajax' => array(
+      'callback' => 'commerce_lie_edit_line_item_form_ajax',
+      'wrapper' => $ajax_id,
+      'method' => 'replace',
+    ),
+    '#attached' => array('js' => array(drupal_get_path('module', 'commerce_lie') . '/commerce_lie.js')),    
+    '#weight' => 100,
+  );
+  */ 
+  
+  //dsm($line_item_wrapper->commerce_product->commerce_price->amount->value());
+/*
+  $price_without_toppings = $line_item_wrapper->commerce_product->commerce_price->value();
+  $price_with_toppings = commerce_price_wrapper_value($line_item_wrapper, 'commerce_unit_price', TRUE);  
+
+  $form['price_without_toppings'] = array(
+    '#type' => 'item',
+    '#title' => t('One Pizza price without toppings'),
+    '#markup' => commerce_currency_format($price_without_toppings['amount'], $price_without_toppings['currency_code']),
+  );
+
+  $form['price_with_toppings'] = array(
+    '#type' => 'item',
+    '#title' => t('One Pizza price with toppings'),
+    '#markup' => commerce_currency_format($price_with_toppings['amount'], $price_with_toppings['currency_code']),
+  );
+*/
+
+  $form['quantity'] = array(
+    '#title' => t('Quantity'),
+    '#type' => 'textfield',    
+    '#default_value' => floor($line_item->quantity),
+    '#size' => 5,
+    '#datatype' => 'integer',
+    '#maxlength' => 128,
+    '#required' => TRUE,
+    //'#weight' => '10',
+  );
+
+  // Add the line item's fields to a container on the form.
+  $form['line_item_fields'] = array(
+    '#type' => 'container',
+    '#parents' => array('line_item_fields'),
+    '#weight' => 10,
+    '#tree' => TRUE,
+  );
+
+  field_attach_form('commerce_line_item', $form_state['line_item'], $form['line_item_fields'], $form_state);
+
+  if (!user_access('administer line items') || TRUE) {
+    $no_access = array(
+      'commerce_unit_price',
+      'commerce_total',
+      'commerce_product',
+      'commerce_display_path',
+    );
+  }
+  else {
+    $no_access = array();
+  }
+
+  if (isset($hidden_fields) && is_array($hidden_fields)) {
+    $hidden_fields = str_replace('quantity', 'quantity_section', $hidden_fields);
+    foreach ($hidden_fields as $hidden_field) {
+      unset($form[$hidden_field]);
+    }
+  }
+
+  foreach ($no_access as $field_name) {
+    $form['line_item_fields'][$field_name]['#access'] = FALSE;
+  }
+
+  $form['#submit'][] = 'commerce_lie_save_submit';
+  $form['#submit'][] = 'commerce_lie_recalculate_sellprice_submit';
+
+  return $form;
+}
+/**
+ * Submit the line item.
+ */
+function commerce_lie_edit_line_item_form_validate($form, &$form_state) {
+  if (isset($form_state['values']['quantity'])) {
+    $quantity = $form_state['values']['quantity'];
+    if (!(is_numeric($quantity))) {
+      form_set_error('quantity', t('Quantity must have an integer value'));
+    }
+    elseif ($quantity < 0) {
+      form_set_error('quantity', t('Quantity cannot be a negative number'));
+    }
+    $form_state['values']['quantity'] = intval($quantity);
+  }
+}
+
+/**
+ * Submit the line item.
+ */
+function commerce_lie_save_submit($form, &$form_state) {  
+  $line_item_id = $form_state['line_item']->line_item_id;
+  $quantity = isset($form_state['values']['quantity']) ? $form_state['values']['quantity'] : -1;
+  if ($quantity == 0) {
+    commerce_line_item_delete($line_item_id);
+    return;
+  }
+  $line_item = commerce_line_item_load($line_item_id); 
+
+  // Add field data to the line item.
+  //field_attach_submit('commerce_line_item', $line_item, $form['line_item_fields'], $form_state);       
+
+  entity_form_submit_build_entity('commerce_line_item', $line_item, $form['line_item_fields'], $form_state);  
+  //dsm($line_item);
+  commerce_line_item_save($line_item);  
+}
+
+/**
+ * Submit the line item.
+ */
+function commerce_lie_recalculate_sellprice_submit($form, &$form_state) {  
+  global $user;  
+  
+  // Get order cart entity
+  $order = commerce_cart_order_load($user->uid);  
+  // Recalculate prices for each line item of the cart
+  commerce_cart_order_refresh($order);  
+  // update order total price
+  $order = commerce_order_status_update($order, 'cart', TRUE);  
+  commerce_order_save($order);
+}
+
+/**
+ * Remove the line item.
+ */
+function commerce_lie_edit_line_item_form_remove($form, &$form_state) {
+  $line_item_id = $form_state['line_item']->line_item_id;
+  commerce_line_item_delete($line_item_id);
+}

@@ -1,0 +1,5 @@
+name = Dc Checkout
+description = Provide Dc Checkout functionality for Pizza project.
+package = Pizza
+core = 7.x
+; Files

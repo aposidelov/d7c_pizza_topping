@@ -1,0 +1,32 @@
+<?php
+
+/*
+* Implements hook_ctools_plugin_directory().
+*/
+function dc_pane_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/panes';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function dc_pane_theme($existing, $type, $theme, $path) {
+  return array(
+    'dc_pane_cart_summary' => array(
+      'variables' => array(
+        'cart_total' => '$0.0',
+        'button_title' => 'Add to cart',   
+        'pizza_title' => '',     
+      ),
+      'template' => 'dc-pane-cart-summary',
+    ),
+    'dc_pane_cart_crumbs' => array(
+      'variables' => array(
+        'pages' => array(),
+      ),
+      'template' => 'dc-pane-cart-crumbs',
+    ),
+  );	
+}

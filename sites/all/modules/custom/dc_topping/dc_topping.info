@@ -1,0 +1,6 @@
+name = Dc Topping Terms
+description = Provide Dc Topping Terms functionality for Pizza project.
+package = Pizza
+core = 7.x
+dependencies[] = commerce
+; Files

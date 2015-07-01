@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * Get cart total of current user
+ * @param  integer $uid -- User id
+ * @return string       -- Total string or FALSE
+ */
+function dc_get_cart_total($uid = '') {
+  if (empty($uid)) {
+    global $user; 
+    $uid = $user->uid;
+  }  
+
+  $order = commerce_cart_order_load($uid);  
+  if (empty($order)) {
+    return '$0.00';
+  }
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+  return commerce_currency_format(
+    $wrapper->commerce_order_total->amount->value(), 
+    $wrapper->commerce_order_total->currency_code->value()
+  );  
+}
+
+function dc_checkout_active_pages($exclude = array()) {  
+  $checkout_pages = commerce_checkout_pages();
+
+  $active_pages_ids = array();
+  $data = db_query("SELECT page FROM {commerce_checkout_pane} WHERE page <> 'disabled' GROUP BY page ORDER BY weight"); //, array(':entity_id' => $line_item_id)
+  foreach ($data as $item) {
+    $active_pages_ids[$item->page] = $item->page;
+  }  
+  
+  return array_intersect_key($checkout_pages, $active_pages_ids);
+}
+
+function commerce_cart_is_cart_empty() {
+  global $user;
+
+  if ($order = commerce_cart_order_load($user->uid)) {
+    $wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+    // If there are one or more products in the cart...
+    if (commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types()) > 0) {
+      return FALSE;
+    }
+  }
+
+  return TRUE;
+}

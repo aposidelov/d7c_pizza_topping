@@ -1,0 +1,5 @@
+; $Id$
+name = Field Vimeo
+description = An implementation of a Vimeo field to show Vimeo thumbnail with link to Vimeo page
+core = 7.x
+package = "Field API"

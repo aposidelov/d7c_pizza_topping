@@ -1,0 +1,13 @@
+name = Line Item Edit
+description = Defines the Line Item entity and associated features.
+package = Commerce (contrib)
+dependencies[] = commerce
+dependencies[] = commerce_price
+dependencies[] = commerce_line_item
+dependencies[] = commerce_order
+dependencies[] = entity
+dependencies[] = rules
+core = 7.x
+
+; Views handlers
+files[] = includes/views/handlers/commerce_line_item_edit_handler_field_edit_line_item_form.inc

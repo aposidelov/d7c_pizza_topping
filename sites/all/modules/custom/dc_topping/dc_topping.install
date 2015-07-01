@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function dc_topping_schema() {  
+  $schema['dc_topping_qty'] = array(
+    'description' => 'Stored quantity by each topping related to ',
+    'fields' => array(
+      'entity_id' => array(
+        'description' => 'Line item id',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+				'default' => 0
+    	),
+    	'tid' => array(
+        'description' => 'Topping term tid',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+				'default' => 0
+    	),
+    	'qty' => array(
+        'description' => 'Topping quantity',
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+				'default' => 1
+    	),
+    ),    
+    'unique keys' => array(
+      'entity_id_tid' => array('entity_id', 'tid')
+    ),    
+    'indexes' => array(
+			'entity_id_tid_index' => array('entity_id', 'tid'),			
+   	),
+  );
+
+  return $schema;
+}

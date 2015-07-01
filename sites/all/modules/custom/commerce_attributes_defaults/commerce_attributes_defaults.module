@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * Implements hook_form_alter().
+ */
+function commerce_attributes_defaults_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form_state['build_info']['base_form_id']) && 
+  	$form_state['build_info']['base_form_id'] == 'commerce_cart_add_to_cart_form') {
+
+  	//dsm($form);
+  	//dsm($form_state);
+  	$nid = $form_state['context']['entity_id'];
+  	$node = entity_load_single('node', $nid);  	
+  	$wrapper = entity_metadata_wrapper('node', $node);
+  	$toppings = $wrapper->field_toppings;
+  	
+  	$topping_defaults = array();
+  	foreach ($toppings as $topping) {
+  		$topping_defaults[] = $topping->tid->value();
+  	}
+
+  	$form['line_item_fields']['field_toppings']['und']['#default_value'] = $topping_defaults;
+  }
+}
+
+	

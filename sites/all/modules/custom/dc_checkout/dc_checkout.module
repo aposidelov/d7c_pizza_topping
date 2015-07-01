@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * Implements hook_form_alter().
+ */
+function dc_checkout_form_alter(&$form, &$form_state, $form_id) {  
+
+  if ($form_id == 'commerce_checkout_form_checkout') {  
+  	$path = drupal_get_path('module', 'dc_checkout') . '/images/paypal-icon.png';
+  	$form['commerce_payment']['payment_method']['#options']['paypal_ec|commerce_payment_paypal_ec'] = 
+  	'<span class="commerce-paypal-ec-icon-wrapper">' . theme('image', array('path' => $path)) . '</span>';
+  }
+}
